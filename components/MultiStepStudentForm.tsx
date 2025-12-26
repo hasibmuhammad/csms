@@ -1,7 +1,11 @@
 "use client";
 
+import { StudentFormData } from '@/types';
+import { studentSchema } from '@/utils/validationSchema';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { BookOpen, Check, ChevronLeft, ChevronRight, Fingerprint, User } from 'lucide-react';
 import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
 
 interface IProps {
   onSuccess: () => void;
@@ -17,8 +21,52 @@ const steps = [
 const MultiStepStudentForm = ({ onSuccess, onCancel }: IProps) => {
   const [currentStep, setCurrentStep] = useState(0);
 
-  const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
+  const {
+    register,
+    handleSubmit,
+    trigger,
+    formState: { errors },
+  } = useForm<StudentFormData>({
+    resolver: zodResolver(studentSchema),
+    mode: 'onChange',
+    defaultValues: {
+      status: 'Active',
+      hobby: 'Reading',
+    }
+  });
+
+  const nextStep = async () => {
+
+    const fieldsToValidate = getFieldsForStep(currentStep);
+    const isValid = await trigger(fieldsToValidate);
+
+    if (isValid) {
+      setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
+    }
+  };
+
+  const getFieldsForStep = (step: number): (keyof StudentFormData)[] => {
+    switch (step) {
+      case 0: return ['name', 'age', 'gender'];
+      case 1: return ['course', 'admissionDate', 'status'];
+      case 2: return ['hobby'];
+      default: return [];
+    }
+  };
+
   const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 0));
+
+
+  const onSubmit = (data: StudentFormData) => {
+    const studentData = {
+      ...data,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+
+    console.log('Form Data:', studentData);
+    onSuccess();
+  };
 
   const renderStepContent = () => {
     switch (currentStep) {
@@ -27,28 +75,42 @@ const MultiStepStudentForm = ({ onSuccess, onCancel }: IProps) => {
           <div key="step-0" className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="space-y-1.5">
               <label className="text-sm font-bold text-gray-700">Name</label>
-              <input type="text" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all" placeholder="John Doe" />
+              <input 
+                {...register('name')}
+                type="text" 
+                className={`w-full px-4 py-2.5 bg-gray-50 border rounded focus:outline-none focus:ring-2 transition-all ${errors.name ? 'border-red-500 focus:ring-red-500/20' : 'border-gray-100 focus:ring-blue-500/20'}`} 
+                placeholder="John Doe" 
+              />
+              {errors.name && <p className="text-xs text-red-500 font-medium">{errors.name.message}</p>}
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-bold text-gray-700">Age</label>
-              <input min={0} type="number" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all" placeholder="20" />
+              <input 
+                {...register('age', { valueAsNumber: true })}
+                min={0} 
+                type="number" 
+                className={`w-full px-4 py-2.5 bg-gray-50 border rounded focus:outline-none focus:ring-2 transition-all ${errors.age ? 'border-red-500 focus:ring-red-500/20' : 'border-gray-100 focus:ring-blue-500/20'}`} 
+                placeholder="20" 
+              />
+              {errors.age && <p className="text-xs text-red-500 font-medium">{errors.age.message}</p>}
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-bold text-gray-700">Gender</label>
               <div className="flex items-center gap-6 pt-1">
                 <label className="flex items-center gap-2 cursor-pointer group">
-                  <input type="radio" name="gender" value="Male" className="w-4 h-4 cursor-pointer accent-blue-600" />
+                  <input {...register('gender')} type="radio" value="Male" className="w-4 h-4 cursor-pointer accent-blue-600" />
                   <span className="text-sm font-medium text-gray-600 group-hover:text-blue-600 transition-colors">Male</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer group">
-                  <input type="radio" name="gender" value="Female" className="w-4 h-4 cursor-pointer accent-blue-600" />
+                  <input {...register('gender')} type="radio" value="Female" className="w-4 h-4 cursor-pointer accent-blue-600" />
                   <span className="text-sm font-medium text-gray-600 group-hover:text-blue-600 transition-colors">Female</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer group">
-                  <input type="radio" name="gender" value="Other" className="w-4 h-4 cursor-pointer accent-blue-600" />
+                  <input {...register('gender')} type="radio" value="Other" className="w-4 h-4 cursor-pointer accent-blue-600" />
                   <span className="text-sm font-medium text-gray-600 group-hover:text-blue-600 transition-colors">Other</span>
                 </label>
               </div>
+              {errors.gender && <p className="text-xs text-red-500 font-medium">{errors.gender.message}</p>}
             </div>
           </div>
         );
@@ -57,18 +119,34 @@ const MultiStepStudentForm = ({ onSuccess, onCancel }: IProps) => {
           <div key="step-1" className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="space-y-1.5">
               <label className="text-sm font-bold text-gray-700">Course</label>
-              <input type="text" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all" placeholder="B.Sc Computer Science" />
+              <input 
+                {...register('course')}
+                type="text" 
+                className={`w-full px-4 py-2.5 bg-gray-50 border rounded focus:outline-none focus:ring-2 transition-all ${errors.course ? 'border-red-500 focus:ring-red-500/20' : 'border-gray-100 focus:ring-blue-500/20'}`} 
+                placeholder="B.Sc Computer Science" 
+              />
+              {errors.course && <p className="text-xs text-red-500 font-medium">{errors.course.message}</p>}
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-bold text-gray-700">Admission Date</label>
-              <input type="date" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all" />
+              <input 
+                {...register('admissionDate')}
+                type="date" 
+                className={`w-full px-4 py-2.5 bg-gray-50 border rounded focus:outline-none focus:ring-2 transition-all ${errors.admissionDate ? 'border-red-500 focus:ring-red-500/20' : 'border-gray-100 focus:ring-blue-500/20'}`} 
+              />
+              {errors.admissionDate && <p className="text-xs text-red-500 font-medium">{errors.admissionDate.message}</p>}
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-bold text-gray-700">Status</label>
-              <select className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
-                <option value="active">Active</option>
-                <option value="deleted">Deleted</option>
+              <select 
+                {...register('status')}
+                className={`w-full px-4 py-2.5 bg-gray-50 border rounded focus:outline-none focus:ring-2 transition-all ${errors.status ? 'border-red-500 focus:ring-red-500/20' : 'border-gray-100 focus:ring-blue-500/20'}`}
+              >
+                <option value="Active">Active</option>
+                <option value="Deleted">Deleted</option>
               </select>
+
+              {errors.status && <p className="text-xs text-red-500 font-medium">{errors.status.message}</p>}
             </div>
           </div>
         );
@@ -77,12 +155,16 @@ const MultiStepStudentForm = ({ onSuccess, onCancel }: IProps) => {
           <div key="step-2" className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="space-y-1.5">
               <label className="text-sm font-bold text-gray-700">Hobby</label>
-              <select className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
-                <option>Reading</option>
-                <option>Travelling</option>
-                <option>Movies</option>
-                <option>Games</option>
+              <select 
+                {...register('hobby')}
+                className={`w-full px-4 py-2.5 bg-gray-50 border rounded focus:outline-none focus:ring-2 transition-all ${errors.hobby ? 'border-red-500 focus:ring-red-500/20' : 'border-gray-100 focus:ring-blue-500/20'}`}
+              >
+                <option value="Reading">Reading</option>
+                <option value="Travelling">Travelling</option>
+                <option value="Movies">Movies</option>
+                <option value="Games">Games</option>
               </select>
+              {errors.hobby && <p className="text-xs text-red-500 font-medium">{errors.hobby.message}</p>}
             </div>
           </div>
         );
@@ -138,7 +220,8 @@ const MultiStepStudentForm = ({ onSuccess, onCancel }: IProps) => {
             )}
           </button>
           <button 
-            onClick={currentStep === steps.length - 1 ? onSuccess : nextStep}
+            type="button"
+            onClick={currentStep === steps.length - 1 ? handleSubmit(onSubmit) : nextStep}
             className="cursor-pointer px-8 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 flex items-center gap-2"
           >
             {currentStep === steps.length - 1 ? 'Complete Registration' : (
