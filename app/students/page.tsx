@@ -1,7 +1,7 @@
 'use client';
 
-import Modal from '@/components/ui/Modal';
 import MultiStepStudentForm from '@/components/MultiStepStudentForm';
+import Modal from '@/components/ui/Modal';
 import { Eye, Filter, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -67,7 +67,7 @@ const StudentsPage = () => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="w-full text-left min-w-[800px] md:min-w-full">
             <thead>
               <tr className="bg-gray-50/50">
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Student Details</th>
@@ -137,6 +137,7 @@ const StudentsPage = () => {
           </div>
         </div>
       </div>
+      
       <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title="Add New Student">
         <MultiStepStudentForm onSuccess={() => setIsOpen(false)} onCancel={() => setIsOpen(false)} />
       </Modal>
