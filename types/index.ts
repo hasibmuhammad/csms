@@ -15,3 +15,9 @@ export interface IStudent {
 }
 
 export type StudentFormData = z.infer<typeof studentSchema>;
+
+export interface IFilters {
+    gender?: string;
+    course?: string;
+    status?: string;
+}

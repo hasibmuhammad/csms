@@ -3,7 +3,7 @@
 import MultiStepStudentForm from '@/components/MultiStepStudentForm';
 import Modal from '@/components/ui/Modal';
 import { useDebounce } from '@/hooks/useDebounce';
-import { IStudent } from '@/types';
+import { IFilters, IStudent } from '@/types';
 import { Eye, Filter, Loader2, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -14,19 +14,37 @@ const StudentsPage = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStudent, setSelectedStudent] = useState<IStudent | null>(null);
+  const [filters, setFilters] = useState<IFilters>({})
+  const [availableCourses, setAvailableCourses] = useState<string[]>([]);
 
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500)
 
-  const loadStudents = async (query: string = '') => {
+  const loadStudents = async (query: string = '', filters: IFilters) => {
     setLoading(true);
     await new Promise(resolve => setTimeout(resolve, 500)); 
     const savedStudents: IStudent[] = JSON.parse(localStorage.getItem('students') || '[]');
     
-    const filteredStudents = savedStudents.filter(student => 
+    // Extract unique courses
+    const courses = Array.from(new Set(savedStudents.map(s => s.course))).filter(Boolean).sort();
+    setAvailableCourses(courses);
+
+    let filteredStudents = savedStudents.filter(student => 
       student.name.toLowerCase().includes(query.toLowerCase()) ||
       student.course.toLowerCase().includes(query.toLowerCase())
     );
+
+    if (filters.gender) {
+      filteredStudents = filteredStudents.filter(student => student.gender === filters.gender);
+    }
+
+    if (filters.course) {
+      filteredStudents = filteredStudents.filter(student => student.course === filters.course);
+    }
+
+    if (filters.status) {
+      filteredStudents = filteredStudents.filter(student => student.status === filters.status);
+    }
 
     setStudents(filteredStudents);
     setLoading(false);
@@ -35,13 +53,14 @@ const StudentsPage = () => {
   const handleAddSuccess = () => {
     setIsOpen(false);
     setSelectedStudent(null);
-    loadStudents(debouncedSearchTerm);
+    loadStudents(debouncedSearchTerm, filters);
   };
 
   const handleDelete = (id: string) => {
+
     const updatedStudents = students.filter((student) => student.id !== id);
     localStorage.setItem('students', JSON.stringify(updatedStudents));
-    loadStudents(debouncedSearchTerm);
+    loadStudents(debouncedSearchTerm, filters);
   };
 
   const handleEdit = (id: string) => {
@@ -53,8 +72,8 @@ const StudentsPage = () => {
   };
 
   useEffect(() => {
-    loadStudents(debouncedSearchTerm);
-  }, [debouncedSearchTerm]);
+    loadStudents(debouncedSearchTerm, filters);
+  }, [debouncedSearchTerm, filters]);
 
   
   return (
@@ -86,22 +105,35 @@ const StudentsPage = () => {
             />
           </div>
           <div className="flex items-center gap-2 w-full md:w-auto">
-            <select className="px-3 py-2 bg-gray-50/50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-blue-100">
-              <option>Gender</option>
-              <option>Male</option>
-              <option>Female</option>
+            <select 
+              value={filters.gender || ''}
+              onChange={(e) => setFilters(prev => ({ ...prev, gender: e.target.value }))}
+              className="px-3 py-2 bg-gray-50/50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-blue-100"
+            >
+              <option value={''}>Gender</option>
+              <option value={'Male'}>Male</option>
+              <option value={'Female'}>Female</option>
             </select>
-            <select className="px-3 py-2 bg-gray-50/50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-blue-100">
-              <option>Course</option>
-              <option>Course1</option>
-              <option>Course2</option>
+            <select 
+              value={filters.course || ''}
+              onChange={(e) => setFilters(prev => ({ ...prev, course: e.target.value }))}
+              className="px-3 py-2 bg-gray-50/50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-blue-100"
+            >
+              <option value={''}>Course</option>
+              {availableCourses.map(course => (
+                <option key={course} value={course}>{course}</option>
+              ))}
             </select>
-            <select className="px-3 py-2 bg-gray-50/50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-blue-100">
-              <option>Status</option>
-              <option>Active</option>
-              <option>Deleted</option>
+            <select 
+              value={filters.status || ''}
+              onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
+              className="px-3 py-2 bg-gray-50/50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-blue-100"
+            >
+              <option value={''}>Status</option>
+              <option value={'Active'}>Active</option>
+              <option value={'Deleted'}>Deleted</option>
             </select>
-            <button className="p-2 text-gray-500 hover:bg-gray-50 rounded-xl border border-gray-100 transition-colors">
+            <button onClick={() => loadStudents(debouncedSearchTerm, filters)} className="p-2 text-gray-500 hover:bg-gray-50 rounded-xl border border-gray-100 transition-colors">
               <Filter size={18} />
             </button>
           </div>
@@ -109,10 +141,7 @@ const StudentsPage = () => {
 
         <div className="flex-1 overflow-auto">
           <table className={`w-full text-left min-w-[800px] md:min-w-full relative border-collapse ${loading || !students.length ? 'h-full' : ''}`}>
-
-
             <thead className="sticky top-0 z-10 bg-gray-50/95 backdrop-blur-sm shadow-sm">
-
               <tr className="bg-gray-50/50">
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Name</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Course</th>
