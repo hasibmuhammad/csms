@@ -2,6 +2,7 @@
 
 import MultiStepStudentForm from '@/components/MultiStepStudentForm';
 import Modal from '@/components/ui/Modal';
+import { useDebounce } from '@/hooks/useDebounce';
 import { IStudent } from '@/types';
 import { Eye, Filter, Loader2, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -11,31 +12,51 @@ const StudentsPage = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [students, setStudents] = useState<IStudent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedStudent, setSelectedStudent] = useState<IStudent | null>(null);
 
-  const loadStudents = async () => {
+
+  const debouncedSearchTerm = useDebounce(searchTerm, 500)
+
+  const loadStudents = async (query: string = '') => {
     setLoading(true);
     await new Promise(resolve => setTimeout(resolve, 500)); 
-    const savedStudents = JSON.parse(localStorage.getItem('students') || '[]');
-    setStudents(savedStudents);
+    const savedStudents: IStudent[] = JSON.parse(localStorage.getItem('students') || '[]');
+    
+    const filteredStudents = savedStudents.filter(student => 
+      student.name.toLowerCase().includes(query.toLowerCase()) ||
+      student.course.toLowerCase().includes(query.toLowerCase())
+    );
+
+    setStudents(filteredStudents);
     setLoading(false);
   };
 
-  useEffect(() => {
-    loadStudents();
-  }, []);
-
   const handleAddSuccess = () => {
     setIsOpen(false);
-    loadStudents();
+    setSelectedStudent(null);
+    loadStudents(debouncedSearchTerm);
   };
 
   const handleDelete = (id: string) => {
     const updatedStudents = students.filter((student) => student.id !== id);
     localStorage.setItem('students', JSON.stringify(updatedStudents));
-    loadStudents();
+    loadStudents(debouncedSearchTerm);
   };
 
+  const handleEdit = (id: string) => {
+    const student = students.find((student) => student.id === id);
+    if (student) {
+      setSelectedStudent(student);
+      setIsOpen(true);
+    }
+  };
 
+  useEffect(() => {
+    loadStudents(debouncedSearchTerm);
+  }, [debouncedSearchTerm]);
+
+  
   return (
     <div className="h-[calc(100vh-160px)] flex flex-col space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
@@ -58,6 +79,7 @@ const StudentsPage = () => {
               <Search size={16} />
             </span>
             <input
+              onChange={(e) => setSearchTerm(e.target.value)}
               type="text"
               placeholder="Search by name or course..."
               className="w-full pl-10 pr-4 py-2 bg-gray-50/50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-blue-100 transition-all"
@@ -148,13 +170,13 @@ const StudentsPage = () => {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-1">
-                        <button className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Edit Profile">
+                        <button onClick={() => handleEdit(student.id)} className="cursor-pointer p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Edit Profile">
                           <Pencil size={16} />
                         </button>
-                        <button onClick={() => handleDelete(student.id)} className="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all" title="Delete">
+                        <button onClick={() => handleDelete(student.id)} className="cursor-pointer p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all" title="Delete">
                           <Trash2 size={16} />
                         </button>
-                        <button className="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all" title="View Profile">
+                        <button className="cursor-pointer p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all" title="View Profile">
                           <Eye size={16} />
                         </button>
                       </div>
@@ -170,9 +192,6 @@ const StudentsPage = () => {
                     </td>
                   </tr>
                 )}
-
-
-
             </tbody>
           </table>
         </div>
@@ -188,8 +207,22 @@ const StudentsPage = () => {
         </div>
       </div>
       
-      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title="Add New Student">
-        <MultiStepStudentForm onSuccess={handleAddSuccess} onCancel={() => setIsOpen(false)} />
+      <Modal 
+        isOpen={isOpen} 
+        onClose={() => {
+          setIsOpen(false);
+          setSelectedStudent(null);
+        }} 
+        title={selectedStudent ? "Edit Student" : "Add New Student"}
+      >
+        <MultiStepStudentForm 
+          initialData={selectedStudent}
+          onSuccess={handleAddSuccess} 
+          onCancel={() => {
+            setIsOpen(false);
+            setSelectedStudent(null);
+          }} 
+        />
       </Modal>
 
     </div>

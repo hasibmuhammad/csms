@@ -1,17 +1,18 @@
 "use client";
 
-import { StudentFormData } from '@/types';
+import { IStudent, StudentFormData } from '@/types';
 import { studentSchema } from '@/utils/validationSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { BookOpen, Check, ChevronLeft, ChevronRight, Fingerprint, Loader2, User } from 'lucide-react';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 interface IProps {
   onSuccess: () => void;
   onCancel: () => void;
+  initialData?: IStudent | null;
 }
 
 const steps = [
@@ -20,7 +21,7 @@ const steps = [
   { id: 'personal', title: 'Personal Info', icon: <Fingerprint size={18} /> },
 ];
 
-const MultiStepStudentForm = ({ onSuccess, onCancel }: IProps) => {
+const MultiStepStudentForm = ({ onSuccess, onCancel, initialData }: IProps) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -29,16 +30,33 @@ const MultiStepStudentForm = ({ onSuccess, onCancel }: IProps) => {
     register,
     handleSubmit,
     trigger,
+    reset,
     formState: { errors },
   } = useForm<StudentFormData>({
     resolver: zodResolver(studentSchema),
     mode: 'onChange',
-    defaultValues: {
+    defaultValues: initialData || {
       status: 'Active',
       hobby: 'Reading',
       admissionDate: new Date().toISOString().split('T')[0],
     }
   });
+
+  useEffect(() => {
+    if (initialData) {
+      reset(initialData);
+    } else {
+      reset({
+        name: '',
+        age: undefined,
+        gender: undefined,
+        course: '',
+        status: 'Active',
+        hobby: 'Reading',
+        admissionDate: new Date().toISOString().split('T')[0],
+      });
+    }
+  }, [initialData, reset]);
 
   const getFieldsForStep = (step: number): (keyof StudentFormData)[] => {
     switch (step) {
@@ -64,18 +82,27 @@ const MultiStepStudentForm = ({ onSuccess, onCancel }: IProps) => {
   const onSubmit = async (data: StudentFormData) => {
     setIsSubmitting(true);
     
-    // intentinoal delay for the loader
+    // intentional delay for the loader
     await new Promise(resolve => setTimeout(resolve, 1500));
 
-    const studentData = {
-      ...data,
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    const existingStudents = JSON.parse(localStorage.getItem('students') || '[]');
-    localStorage.setItem('students', JSON.stringify([...existingStudents, studentData]));
+    const existingStudents: IStudent[] = JSON.parse(localStorage.getItem('students') || '[]');
+    
+    if (initialData) {
+      // Update existing student
+      const updatedStudents = existingStudents.map(s => 
+        s.id === initialData.id ? { ...s, ...data, updatedAt: new Date().toISOString() } : s
+      );
+      localStorage.setItem('students', JSON.stringify(updatedStudents));
+    } else {
+      // Add new student
+      const studentData = {
+        ...data,
+        id: crypto.randomUUID(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      localStorage.setItem('students', JSON.stringify([...existingStudents, studentData]));
+    }
     
     setIsSubmitting(false);
     onSuccess();
