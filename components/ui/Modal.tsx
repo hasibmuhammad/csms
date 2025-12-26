@@ -3,7 +3,7 @@
 import { X } from 'lucide-react';
 import React, { useEffect } from 'react';
 
-interface ModalProps {
+interface IProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
@@ -11,7 +11,7 @@ interface ModalProps {
   footer?: React.ReactNode;
 }
 
-const Modal = ({ isOpen, onClose, title, children, footer }: ModalProps) => {
+const Modal = ({ isOpen, onClose, title, children, footer }: IProps) => {
   // Prevent scrolling when modal is open
   useEffect(() => {
     if (isOpen) {
@@ -49,7 +49,7 @@ const Modal = ({ isOpen, onClose, title, children, footer }: ModalProps) => {
         </div>
 
         {/* Content */}
-        <div className="flex-1 p-6 overflow-y-auto custom-scrollbar">
+        <div className="flex-1 p-6 overflow-y-auto">
           {children}
         </div>
 

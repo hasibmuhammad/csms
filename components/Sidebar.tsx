@@ -4,12 +4,12 @@ import { LayoutDashboard, Users, X } from "lucide-react";
 import Link from "next/link";
 
 
-interface SidebarProps {
+interface IProps {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
 }
 
-const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
+const Sidebar = ({ isOpen, setIsOpen }: IProps) => {
   const menuItems = [
     { name: 'Dashboard', href: '/', icon: <LayoutDashboard size={20} /> },
     { name: 'Students', href: '/students', icon: <Users size={20} /> },
