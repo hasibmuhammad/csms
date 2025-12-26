@@ -24,7 +24,7 @@ const MultiStepStudentForm = ({ onSuccess, onCancel }: MultiStepFormProps) => {
     switch (currentStep) {
       case 0:
         return (
-          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-30)0">
+          <div key="step-0" className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-sm font-bold text-gray-700">First Name</label>
@@ -47,7 +47,7 @@ const MultiStepStudentForm = ({ onSuccess, onCancel }: MultiStepFormProps) => {
         );
       case 1:
         return (
-          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+          <div key="step-1" className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="space-y-1.5">
               <label className="text-sm font-bold text-gray-700">Course Selection</label>
               <select className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all">
@@ -76,13 +76,13 @@ const MultiStepStudentForm = ({ onSuccess, onCancel }: MultiStepFormProps) => {
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-bold text-gray-700">Student ID (Auto-generated)</label>
-              <input type="text" disabled className="w-full px-4 py-2.5 bg-gray-100 border border-gray-100 rounded-xl text-gray-500" value="STU2025001" />
+              <input type="text" disabled className="w-full px-4 py-2.5 bg-gray-100 border border-gray-100 rounded-xl text-gray-500" defaultValue="STU2025001" />
             </div>
           </div>
         );
       case 2:
         return (
-          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+          <div key="step-2" className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="space-y-1.5">
               <label className="text-sm font-bold text-gray-700">Home Address</label>
               <textarea rows={3} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all" placeholder="123 College St, University Town" />
@@ -142,7 +142,7 @@ const MultiStepStudentForm = ({ onSuccess, onCancel }: MultiStepFormProps) => {
       <div className="flex items-center justify-between border-t border-gray-100 pt-6">
         <button 
           onClick={currentStep === 0 ? onCancel : prevStep}
-          className="px-6 py-2.5 text-sm font-bold text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-all flex items-center gap-2"
+          className="cursor-pointer px-6 py-2.5 text-sm font-bold text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-all flex items-center gap-2"
         >
           {currentStep === 0 ? 'Cancel' : (
             <>
@@ -153,7 +153,7 @@ const MultiStepStudentForm = ({ onSuccess, onCancel }: MultiStepFormProps) => {
         </button>
         <button 
           onClick={currentStep === steps.length - 1 ? onSuccess : nextStep}
-          className="px-8 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 flex items-center gap-2"
+          className="cursor-pointer px-8 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 flex items-center gap-2"
         >
           {currentStep === steps.length - 1 ? 'Complete Registration' : (
             <>
