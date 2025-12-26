@@ -92,7 +92,7 @@ const MultiStepStudentForm = ({ onSuccess, onCancel }: IProps) => {
   };
 
   return (
-    <div className="flex flex-col h-[600px]">
+    <div className="flex flex-col h-[500px]">
       {/* Stepper */}
       <div className="flex-none mb-8">
         <div className="flex items-center justify-between">
