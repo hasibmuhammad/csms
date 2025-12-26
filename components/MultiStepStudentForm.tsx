@@ -3,7 +3,9 @@
 import { StudentFormData } from '@/types';
 import { studentSchema } from '@/utils/validationSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { BookOpen, Check, ChevronLeft, ChevronRight, Fingerprint, User } from 'lucide-react';
+
+import { BookOpen, Check, ChevronLeft, ChevronRight, Fingerprint, Loader2, User } from 'lucide-react';
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
@@ -20,6 +22,8 @@ const steps = [
 
 const MultiStepStudentForm = ({ onSuccess, onCancel }: IProps) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
 
   const {
     register,
@@ -32,18 +36,9 @@ const MultiStepStudentForm = ({ onSuccess, onCancel }: IProps) => {
     defaultValues: {
       status: 'Active',
       hobby: 'Reading',
+      admissionDate: new Date().toISOString().split('T')[0],
     }
   });
-
-  const nextStep = async () => {
-
-    const fieldsToValidate = getFieldsForStep(currentStep);
-    const isValid = await trigger(fieldsToValidate);
-
-    if (isValid) {
-      setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
-    }
-  };
 
   const getFieldsForStep = (step: number): (keyof StudentFormData)[] => {
     switch (step) {
@@ -54,19 +49,38 @@ const MultiStepStudentForm = ({ onSuccess, onCancel }: IProps) => {
     }
   };
 
+  const nextStep = async () => {
+    const fieldsToValidate = getFieldsForStep(currentStep);
+    const isValid = await trigger(fieldsToValidate);
+
+    if (isValid) {
+      setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
+    }
+  };
+
   const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 0));
 
 
-  const onSubmit = (data: StudentFormData) => {
+  const onSubmit = async (data: StudentFormData) => {
+    setIsSubmitting(true);
+    
+    // intentinoal delay for the loader
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
     const studentData = {
       ...data,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }
+      id: crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
 
-    console.log('Form Data:', studentData);
+    const existingStudents = JSON.parse(localStorage.getItem('students') || '[]');
+    localStorage.setItem('students', JSON.stringify([...existingStudents, studentData]));
+    
+    setIsSubmitting(false);
     onSuccess();
   };
+
 
   const renderStepContent = () => {
     switch (currentStep) {
@@ -209,8 +223,9 @@ const MultiStepStudentForm = ({ onSuccess, onCancel }: IProps) => {
       <div className="flex-none mt-8 pt-6 border-t border-gray-100">
         <div className="flex items-center justify-between">
           <button 
+            disabled={isSubmitting}
             onClick={currentStep === 0 ? onCancel : prevStep}
-            className="cursor-pointer px-6 py-2.5 text-sm font-bold text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-all flex items-center gap-2"
+            className="cursor-pointer px-6 py-2.5 text-sm font-bold text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {currentStep === 0 ? 'Cancel' : (
               <>
@@ -221,16 +236,25 @@ const MultiStepStudentForm = ({ onSuccess, onCancel }: IProps) => {
           </button>
           <button 
             type="button"
+            disabled={isSubmitting}
             onClick={currentStep === steps.length - 1 ? handleSubmit(onSubmit) : nextStep}
-            className="cursor-pointer px-8 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 flex items-center gap-2"
+            className="cursor-pointer px-8 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            {currentStep === steps.length - 1 ? 'Complete Registration' : (
+            {currentStep === steps.length - 1 ? (
+              isSubmitting ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  Saving...
+                </>
+              ) : 'Complete Registration'
+            ) : (
               <>
                 Next Step
                 <ChevronRight size={18} />
               </>
             )}
           </button>
+
         </div>
       </div>
     </div>

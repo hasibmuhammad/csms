@@ -2,6 +2,7 @@
 
 import { LayoutDashboard, Users, X } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 
 interface IProps {
@@ -10,6 +11,8 @@ interface IProps {
 }
 
 const Sidebar = ({ isOpen, setIsOpen }: IProps) => {
+  const pathname = usePathname();
+
   const menuItems = [
     { name: 'Dashboard', href: '/', icon: <LayoutDashboard size={20} /> },
     { name: 'Students', href: '/students', icon: <Users size={20} /> },
@@ -48,17 +51,27 @@ const Sidebar = ({ isOpen, setIsOpen }: IProps) => {
         </div>
         
         <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
-          {menuItems.map((item) => (
-            <Link
-              key={item.name}
-              href={item.href}
-              className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-600 rounded-xl hover:bg-gray-50 hover:text-blue-600 transition-all group"
-              onClick={() => { if (window.innerWidth < 1024) setIsOpen(false); }}
-            >
-              <span className="text-gray-400 group-hover:text-blue-500">{item.icon}</span>
-              {item.name}
-            </Link>
-          ))}
+          {menuItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl transition-all group ${
+                  isActive 
+                    ? 'bg-blue-50 text-blue-600' 
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-blue-600'
+                }`}
+                onClick={() => { if (window.innerWidth < 1024) setIsOpen(false); }}
+              >
+                <span className={isActive ? 'text-blue-600' : 'text-gray-400 group-hover:text-blue-500'}>
+                  {item.icon}
+                </span>
+                {item.name}
+              </Link>
+            );
+          })}
+
         </nav>
       </aside>
     </>
