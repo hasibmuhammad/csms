@@ -48,3 +48,6 @@ A modern, responsive dashboard for managing college student records efficiently.
 - **No Authentication**: The application does not implement any authentication or authorization mechanisms, assuming a single user role.
 - **No Database**: The application does not implement any database, assuming a single user role.
 
+## 🔗 Live URL
+https://app-csms.vercel.app
+
