@@ -6,6 +6,7 @@ interface IStudentTableProps {
   loading: boolean;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
+  onView: (id: string) => void;
 }
 
 const StudentTable = ({
@@ -13,6 +14,7 @@ const StudentTable = ({
   loading,
   onEdit,
   onDelete,
+  onView,
 }: IStudentTableProps) => {
   return (
     <div className="flex-1 overflow-auto">
@@ -129,6 +131,7 @@ const StudentTable = ({
                       <Trash2 size={16} />
                     </button>
                     <button
+                      onClick={() => onView(student.id)}
                       className="cursor-pointer p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
                       title="View Profile"
                     >

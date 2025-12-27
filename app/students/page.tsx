@@ -1,10 +1,11 @@
 'use client';
 
 import StudentForm from '@/components/StudentForm/StudentForm';
-import StudentFilters from '@/components/students/StudentFilters';
-import StudentHeader from '@/components/students/StudentHeader';
-import StudentPagination from '@/components/students/StudentPagination';
-import StudentTable from '@/components/students/StudentTable';
+import StudentFilters from '@/components/Students/StudentFilters';
+import StudentHeader from '@/components/Students/StudentHeader';
+import StudentPagination from '@/components/Students/StudentPagination';
+import StudentPreview from '@/components/Students/StudentPreview';
+import StudentTable from '@/components/Students/StudentTable';
 import { useDebounce } from '@/hooks/useDebounce';
 import Modal from '@/libs/ui/Modal';
 import { IFilters, IStudent } from '@/types';
@@ -13,6 +14,7 @@ import { useEffect, useState } from 'react';
 
 const StudentsPage = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isOpenPreview, setIsOpenPreview] = useState(false);
   const [students, setStudents] = useState<IStudent[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -74,6 +76,14 @@ const StudentsPage = () => {
     }
   };
 
+  const handleView = (id: string) => {
+    const student = students.find((student) => student.id === id);
+    if (student) {
+      setSelectedStudent(student);
+      setIsOpenPreview(true);
+    }
+  };
+
   useEffect(() => {
     loadStudents(debouncedSearchTerm, filters);
   }, [debouncedSearchTerm, filters]);
@@ -98,6 +108,7 @@ const StudentsPage = () => {
           loading={loading}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          onView={handleView}
         />
 
         <StudentPagination />
@@ -120,6 +131,17 @@ const StudentsPage = () => {
             setSelectedStudent(null);
           }} 
         />
+      </Modal>
+
+      <Modal 
+        title="View Student Info"
+        isOpen={isOpenPreview} 
+        onClose={() => {
+          setIsOpenPreview(false);
+          setSelectedStudent(null);
+        }} 
+      >
+        {selectedStudent && <StudentPreview student={selectedStudent} />}
       </Modal>
 
     </div>
