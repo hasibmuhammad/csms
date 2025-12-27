@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CSMS - College Student Management System v0.1.0
 
-## Getting Started
+A modern, responsive dashboard for managing college student records efficiently. Built with a focus on clean UI/UX and robust functionality.
 
-First, run the development server:
+## 🚀 Getting Started
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### Prerequisites
+- Node.js (v18 or higher)
+- npm or yarn
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Installation
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/hasibmuhammad/csms.git
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠️ Tech Stack
+- **Framework**: [Next.js 16.1.1](https://nextjs.org/) (App Router)
+- **Library**: [React 19.2.3](https://react.dev/)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Forms**: [React Hook Form](https://react-hook-form.com/) & [Zod](https://zod.dev/)
+- **Persistence**: Browser `localStorage`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## ✨ Core Features
+- **Student Management**: Full CRUD (Create, Read, Update, Delete) capability for student profiles.
+- **Multi-Step Admission Form**: A structured 3-step form (Basic Info, Academic Info, Personal Info) with real-time validation.
+- **Soft Delete Mechanism**: Ability to deactivate and reactivate students, preserving data integrity.
+- **Advanced Search & Filtering**: Real-time search by name/course and multi-criteria filters for gender, course, and status.
+- **Dynamic Sorting**: Sort student records by Name and Admission Date (Ascending/Descending).
+- **Custom Pagination**: Robust pagination system that adapts to filtered results and preserves UI consistency even with zero results.
+- **Polished UI/UX**: High-performance dashboard with smooth transitions, loading states, and responsive layouts.
 
-## Learn More
+## 📝 Assumptions Made
+- **Client-Side Persistence**: For this project phase, `localStorage` is used as the primary data store, assuming no persistent backend or database is required.
+- **Client-Side Processing**: Filtering, sorting, and pagination are handled on the client-side, assuming the student list size remains within reasonable limits for browser memory.
+- **Soft Delete Preference**: A "status-based" delete approach was taken to allow users to recover deactivated students easily.
+- **Single Role Access**: The current implementation assumes a single administrative user role (Registrar Office)
+- **No Authentication**: The application does not implement any authentication or authorization mechanisms, assuming a single user role.
+- **No Database**: The application does not implement any database, assuming a single user role.
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
