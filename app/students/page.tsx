@@ -54,6 +54,19 @@ const StudentsPage = () => {
       filteredStudents = filteredStudents.filter(student => student.status === filters.status);
     }
 
+    // Sorting logic
+    if (filters.sortBy) {
+      filteredStudents.sort((a, b) => {
+        let comparison = 0;
+        if (filters.sortBy === 'name') {
+          comparison = a.name.localeCompare(b.name);
+        } else if (filters.sortBy === 'admissionDate') {
+          comparison = new Date(a.admissionDate).getTime() - new Date(b.admissionDate).getTime();
+        }
+        return filters.sortOrder === 'desc' ? -comparison : comparison;
+      });
+    }
+
     setStudents(filteredStudents);
     setLoading(false);
   };

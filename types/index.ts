@@ -20,4 +20,6 @@ export interface IFilters {
     gender?: string;
     course?: string;
     status?: string;
+    sortBy?: 'name' | 'admissionDate';
+    sortOrder?: 'asc' | 'desc';
 }

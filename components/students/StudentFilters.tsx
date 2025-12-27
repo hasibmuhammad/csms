@@ -76,6 +76,24 @@ const StudentFilters = ({
             </option>
           ))}
         </select>
+        <select
+          value={`${filters.sortBy || ""}-${filters.sortOrder || ""}`}
+          onChange={(e) => {
+            const [sortBy, sortOrder] = e.target.value.split("-");
+            onFilterChange({ 
+              ...filters, 
+              sortBy: sortBy as any || undefined, 
+              sortOrder: sortOrder as any || undefined 
+            });
+          }}
+          className="px-3 py-2 bg-gray-50/50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-blue-100"
+        >
+          <option value="-">Sort By</option>
+          <option value="name-asc">Name (A-Z)</option>
+          <option value="name-desc">Name (Z-A)</option>
+          <option value="admissionDate-desc">Newest First</option>
+          <option value="admissionDate-asc">Oldest First</option>
+        </select>
         <button
           onClick={onApplyFilters}
           className="p-2 text-gray-500 hover:bg-gray-50 rounded-xl border border-gray-100 transition-colors"
