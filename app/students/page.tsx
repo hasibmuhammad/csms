@@ -3,14 +3,16 @@
 import StudentForm from '@/components/StudentForm/StudentForm';
 import StudentFilters from '@/components/Students/StudentFilters';
 import StudentHeader from '@/components/Students/StudentHeader';
-import StudentPagination from '@/components/Students/StudentPagination';
 import StudentPreview from '@/components/Students/StudentPreview';
 import StudentTable from '@/components/Students/StudentTable';
 import { useDebounce } from '@/hooks/useDebounce';
 import Modal from '@/libs/ui/Modal';
+import Pagination from '@/libs/ui/Pagination';
 import { IFilters, IStudent } from '@/types';
 import { Loader2, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+
+const ITEMS_PER_PAGE = 10;
 
 
 const StudentsPage = () => {
@@ -25,10 +27,14 @@ const StudentsPage = () => {
   const [students, setStudents] = useState<IStudent[]>([]);
   const [selectedStudent, setSelectedStudent] = useState<IStudent | null>(null);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500)
 
-  const loadStudents = async (query: string = '', filters: IFilters) => {
+  const loadStudents = async (query: string = '', filters: IFilters, page: number = 1) => {
     setLoading(true);
     await new Promise(resolve => setTimeout(resolve, 500)); 
     const savedStudents: IStudent[] = JSON.parse(localStorage.getItem('students') || '[]');
@@ -67,14 +73,22 @@ const StudentsPage = () => {
       });
     }
 
-    setStudents(filteredStudents);
+    setTotalCount(filteredStudents.length);
+    
+    // Apply pagination
+    const paginatedStudents = filteredStudents.slice(
+      (page - 1) * ITEMS_PER_PAGE,
+      page * ITEMS_PER_PAGE
+    );
+
+    setStudents(paginatedStudents);
     setLoading(false);
   };
 
   const handleAddSuccess = () => {
     setIsOpen(false);
     setSelectedStudent(null);
-    loadStudents(debouncedSearchTerm, filters);
+    loadStudents(debouncedSearchTerm, filters, currentPage);
   };
 
   const handleDelete = (id: string) => {
@@ -93,7 +107,7 @@ const StudentsPage = () => {
         : student
     );
     localStorage.setItem('students', JSON.stringify(updatedStudents));
-    loadStudents(debouncedSearchTerm, filters);
+    loadStudents(debouncedSearchTerm, filters, currentPage);
   };
 
   const onConfirmDelete = async () => {
@@ -114,7 +128,7 @@ const StudentsPage = () => {
     setOpenDeleteConfirmModal(false);
     setSelectedStudent(null);
     setIsDeleting(false);
-    loadStudents(debouncedSearchTerm, filters);
+    loadStudents(debouncedSearchTerm, filters, currentPage);
   };
 
   const handleEdit = (id: string) => {
@@ -134,8 +148,14 @@ const StudentsPage = () => {
   };
 
   useEffect(() => {
-    loadStudents(debouncedSearchTerm, filters);
+    setCurrentPage(1);
+    loadStudents(debouncedSearchTerm, filters, 1);
   }, [debouncedSearchTerm, filters]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    loadStudents(debouncedSearchTerm, filters, page);
+  };
 
   
   return (
@@ -149,7 +169,10 @@ const StudentsPage = () => {
           filters={filters}
           onFilterChange={setFilters}
           availableCourses={availableCourses}
-          onApplyFilters={() => loadStudents(debouncedSearchTerm, filters)}
+          onApplyFilters={() => {
+            setCurrentPage(1);
+            loadStudents(debouncedSearchTerm, filters, 1);
+          }}
         />
         
         <StudentTable 
@@ -161,7 +184,12 @@ const StudentsPage = () => {
           onReactivate={handleReactivate}
         />
 
-        <StudentPagination />
+        <Pagination 
+          currentPage={currentPage}
+          totalCount={totalCount}
+          pageSize={ITEMS_PER_PAGE}
+          onPageChange={handlePageChange}
+        />
       </div>
       
       <Modal 
