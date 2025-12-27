@@ -9,18 +9,21 @@ import StudentTable from '@/components/Students/StudentTable';
 import { useDebounce } from '@/hooks/useDebounce';
 import Modal from '@/libs/ui/Modal';
 import { IFilters, IStudent } from '@/types';
+import { Loader2, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 
 const StudentsPage = () => {
+  const [openDeleteConfirmModal, setOpenDeleteConfirmModal] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenPreview, setIsOpenPreview] = useState(false);
-  const [students, setStudents] = useState<IStudent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedStudent, setSelectedStudent] = useState<IStudent | null>(null);
-  const [filters, setFilters] = useState<IFilters>({})
   const [availableCourses, setAvailableCourses] = useState<string[]>([]);
+  const [filters, setFilters] = useState<IFilters>({})
+  const [students, setStudents] = useState<IStudent[]>([]);
+  const [selectedStudent, setSelectedStudent] = useState<IStudent | null>(null);
 
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500)
@@ -62,9 +65,27 @@ const StudentsPage = () => {
   };
 
   const handleDelete = (id: string) => {
+    const student = students.find((s) => s.id === id);
+    if (student) {
+      setSelectedStudent(student);
+      setOpenDeleteConfirmModal(true);
+    }
+  };
 
-    const updatedStudents = students.filter((student) => student.id !== id);
+  const onConfirmDelete = async () => {
+    setIsDeleting(true);
+
+    await new Promise(resolve => setTimeout(resolve, 500)); 
+
+    if (!selectedStudent) return;
+    
+    const savedStudents: IStudent[] = JSON.parse(localStorage.getItem('students') || '[]');
+    const updatedStudents = savedStudents.filter((student) => student.id !== selectedStudent.id);
     localStorage.setItem('students', JSON.stringify(updatedStudents));
+    
+    setOpenDeleteConfirmModal(false);
+    setSelectedStudent(null);
+    setIsDeleting(false);
     loadStudents(debouncedSearchTerm, filters);
   };
 
@@ -142,6 +163,56 @@ const StudentsPage = () => {
         }} 
       >
         {selectedStudent && <StudentPreview student={selectedStudent} />}
+      </Modal>
+
+      <Modal 
+        title="Confirm Deletion"
+        isOpen={openDeleteConfirmModal} 
+        onClose={() => {
+          setOpenDeleteConfirmModal(false);
+          setSelectedStudent(null);
+        }} 
+        footer={
+          <>
+            <button 
+              disabled={isDeleting}
+              onClick={() => {
+                setOpenDeleteConfirmModal(false);
+                setSelectedStudent(null);
+              }}
+              className="cursor-pointer px-6 py-2.5 text-sm font-bold text-gray-500 bg-gray-100 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-all"
+            >
+              Cancel
+            </button>
+            <button 
+              disabled={isDeleting}
+              onClick={onConfirmDelete}
+              className="cursor-pointer px-6 py-2.5 bg-rose-600 text-white rounded-xl font-bold text-sm hover:bg-rose-700 transition-all shadow-lg shadow-rose-200 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-[140px]"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Confirm Delete'
+              )}
+            </button>
+          </>
+        }
+      >
+        <div className="flex flex-col items-center text-center space-y-4 py-4">
+          <div className="h-16 w-16 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center">
+            <Trash2 size={32} />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-gray-900">Are you sure?</h3>
+            <p className="text-gray-500 mt-2">
+              You are about to delete <span className="font-bold text-gray-900">{selectedStudent?.name}</span>. 
+              This action cannot be undone and will remove all associated data.
+            </p>
+          </div>
+        </div>
       </Modal>
 
     </div>
