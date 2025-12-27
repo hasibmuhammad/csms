@@ -1,5 +1,5 @@
 import { IStudent } from "@/types";
-import { Eye, Loader2, Pencil, Trash2 } from "lucide-react";
+import { Eye, Loader2, Pencil, RotateCcw, Trash2 } from "lucide-react";
 
 interface IStudentTableProps {
   students: IStudent[];
@@ -7,6 +7,7 @@ interface IStudentTableProps {
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
   onView: (id: string) => void;
+  onReactivate: (id: string) => void;
 }
 
 const StudentTable = ({
@@ -15,6 +16,7 @@ const StudentTable = ({
   onEdit,
   onDelete,
   onView,
+  onReactivate
 }: IStudentTableProps) => {
   return (
     <div className="flex-1 overflow-auto">
@@ -124,11 +126,19 @@ const StudentTable = ({
                       <Pencil size={16} />
                     </button>
                     <button
-                      onClick={() => onDelete(student.id)}
-                      className="cursor-pointer p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
-                      title="Delete"
+                      onClick={() => student.status === 'Active' ? onDelete(student.id) : onReactivate(student.id)}
+                      className={`cursor-pointer p-1.5 rounded-lg transition-all ${
+                        student.status === "Active"
+                          ? "text-gray-400 hover:text-rose-600 hover:bg-rose-50"
+                          : "text-gray-400 hover:text-emerald-600 hover:bg-emerald-50"
+                      }`}
+                      title={student.status === "Active" ? "Deactivate" : "Reactivate"}
                     >
-                      <Trash2 size={16} />
+                      {student.status === "Active" ? (
+                        <Trash2 size={16} />
+                      ) : (
+                        <RotateCcw size={16} />
+                      )}
                     </button>
                     <button
                       onClick={() => onView(student.id)}

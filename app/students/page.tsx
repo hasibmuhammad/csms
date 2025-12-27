@@ -72,6 +72,17 @@ const StudentsPage = () => {
     }
   };
 
+  const handleReactivate = (id: string) => {
+    const savedStudents: IStudent[] = JSON.parse(localStorage.getItem('students') || '[]');
+    const updatedStudents = savedStudents.map((student) => 
+      student.id === id 
+        ? { ...student, status: 'Active', updatedAt: new Date().toISOString() } 
+        : student
+    );
+    localStorage.setItem('students', JSON.stringify(updatedStudents));
+    loadStudents(debouncedSearchTerm, filters);
+  };
+
   const onConfirmDelete = async () => {
     setIsDeleting(true);
 
@@ -80,7 +91,11 @@ const StudentsPage = () => {
     if (!selectedStudent) return;
     
     const savedStudents: IStudent[] = JSON.parse(localStorage.getItem('students') || '[]');
-    const updatedStudents = savedStudents.filter((student) => student.id !== selectedStudent.id);
+    const updatedStudents = savedStudents.map((student) => 
+      student.id === selectedStudent.id 
+        ? { ...student, status: 'Inactive', updatedAt: new Date().toISOString() } 
+        : student
+    );
     localStorage.setItem('students', JSON.stringify(updatedStudents));
     
     setOpenDeleteConfirmModal(false);
@@ -130,6 +145,7 @@ const StudentsPage = () => {
           onEdit={handleEdit}
           onDelete={handleDelete}
           onView={handleView}
+          onReactivate={handleReactivate}
         />
 
         <StudentPagination />
@@ -209,7 +225,7 @@ const StudentsPage = () => {
             <h3 className="text-xl font-bold text-gray-900">Are you sure?</h3>
             <p className="text-gray-500 mt-2">
               You are about to delete <span className="font-bold text-gray-900">{selectedStudent?.name}</span>. 
-              This action cannot be undone and will remove all associated data.
+              This will change the status to Inactive. You can update the status to make it active again.
             </p>
           </div>
         </div>
