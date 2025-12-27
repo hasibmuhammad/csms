@@ -1,4 +1,4 @@
-import DashboardWrapper from "@/components/DashboardWrapper";
+import DashboardWrapper from "@/components/DashboardWrapper/DashboardWrapper";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ReactNode } from "react";

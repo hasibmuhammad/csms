@@ -9,9 +9,10 @@ interface IProps {
   title: string;
   children: React.ReactNode;
   footer?: React.ReactNode;
+  outsideOff?: boolean;
 }
 
-const Modal = ({ isOpen, onClose, title, children, footer }: IProps) => {
+const Modal = ({ isOpen, onClose, title, children, footer, outsideOff = false }: IProps) => {
   // Prevent scrolling when modal is open
   useEffect(() => {
     if (isOpen) {
@@ -31,7 +32,7 @@ const Modal = ({ isOpen, onClose, title, children, footer }: IProps) => {
       {/* Backdrop */}
       <div 
         className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity animate-in fade-in duration-300" 
-        onClick={onClose}
+        onClick={outsideOff ? undefined : onClose}
       />
       
       {/* Modal Container */}

@@ -9,7 +9,7 @@ export interface IStudent {
     course: string;
     hobby: 'Reading' | 'Travelling' | 'Movies' | 'Games';
     admissionDate: string;
-    status: 'Active' | 'Deleted';
+    status: 'Active' | 'Inactive';
     createdAt?: string;
     updatedAt?: string;
 }

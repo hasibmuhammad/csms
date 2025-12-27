@@ -9,6 +9,10 @@ import { BookOpen, Check, ChevronLeft, ChevronRight, Fingerprint, Loader2, User 
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
+import AcademicInfo from './Steps/AcademicInfo';
+import BasicInfo from './Steps/BasicInfo';
+import PersonalInfo from './Steps/PersonalInfo';
+
 interface IProps {
   onSuccess: () => void;
   onCancel: () => void;
@@ -21,7 +25,7 @@ const steps = [
   { id: 'personal', title: 'Personal Info', icon: <Fingerprint size={18} /> },
 ];
 
-const MultiStepStudentForm = ({ onSuccess, onCancel, initialData }: IProps) => {
+const StudentForm = ({ onSuccess, onCancel, initialData }: IProps) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -31,7 +35,7 @@ const MultiStepStudentForm = ({ onSuccess, onCancel, initialData }: IProps) => {
     handleSubmit,
     trigger,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<StudentFormData>({
     resolver: zodResolver(studentSchema),
     mode: 'onChange',
@@ -41,6 +45,17 @@ const MultiStepStudentForm = ({ onSuccess, onCancel, initialData }: IProps) => {
       admissionDate: new Date().toISOString().split('T')[0],
     }
   });
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isDirty]);
 
   useEffect(() => {
     if (initialData) {
@@ -112,107 +127,16 @@ const MultiStepStudentForm = ({ onSuccess, onCancel, initialData }: IProps) => {
   const renderStepContent = () => {
     switch (currentStep) {
       case 0:
-        return (
-          <div key="step-0" className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="space-y-1.5">
-              <label className="text-sm font-bold text-gray-700">Name</label>
-              <input 
-                {...register('name')}
-                type="text" 
-                className={`w-full px-4 py-2.5 bg-gray-50 border rounded focus:outline-none focus:ring-2 transition-all ${errors.name ? 'border-red-500 focus:ring-red-500/20' : 'border-gray-100 focus:ring-blue-500/20'}`} 
-                placeholder="John Doe" 
-              />
-              {errors.name && <p className="text-xs text-red-500 font-medium">{errors.name.message}</p>}
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-bold text-gray-700">Age</label>
-              <input 
-                {...register('age', { valueAsNumber: true })}
-                min={0} 
-                type="number" 
-                className={`w-full px-4 py-2.5 bg-gray-50 border rounded focus:outline-none focus:ring-2 transition-all ${errors.age ? 'border-red-500 focus:ring-red-500/20' : 'border-gray-100 focus:ring-blue-500/20'}`} 
-                placeholder="20" 
-              />
-              {errors.age && <p className="text-xs text-red-500 font-medium">{errors.age.message}</p>}
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-bold text-gray-700">Gender</label>
-              <div className="flex items-center gap-6 pt-1">
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <input {...register('gender')} type="radio" value="Male" className="w-4 h-4 cursor-pointer accent-blue-600" />
-                  <span className="text-sm font-medium text-gray-600 group-hover:text-blue-600 transition-colors">Male</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <input {...register('gender')} type="radio" value="Female" className="w-4 h-4 cursor-pointer accent-blue-600" />
-                  <span className="text-sm font-medium text-gray-600 group-hover:text-blue-600 transition-colors">Female</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <input {...register('gender')} type="radio" value="Other" className="w-4 h-4 cursor-pointer accent-blue-600" />
-                  <span className="text-sm font-medium text-gray-600 group-hover:text-blue-600 transition-colors">Other</span>
-                </label>
-              </div>
-              {errors.gender && <p className="text-xs text-red-500 font-medium">{errors.gender.message}</p>}
-            </div>
-          </div>
-        );
+        return <BasicInfo register={register} errors={errors} />;
       case 1:
-        return (
-          <div key="step-1" className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="space-y-1.5">
-              <label className="text-sm font-bold text-gray-700">Course</label>
-              <input 
-                {...register('course')}
-                type="text" 
-                className={`w-full px-4 py-2.5 bg-gray-50 border rounded focus:outline-none focus:ring-2 transition-all ${errors.course ? 'border-red-500 focus:ring-red-500/20' : 'border-gray-100 focus:ring-blue-500/20'}`} 
-                placeholder="B.Sc Computer Science" 
-              />
-              {errors.course && <p className="text-xs text-red-500 font-medium">{errors.course.message}</p>}
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-bold text-gray-700">Admission Date</label>
-              <input 
-                {...register('admissionDate')}
-                type="date" 
-                className={`w-full px-4 py-2.5 bg-gray-50 border rounded focus:outline-none focus:ring-2 transition-all ${errors.admissionDate ? 'border-red-500 focus:ring-red-500/20' : 'border-gray-100 focus:ring-blue-500/20'}`} 
-              />
-              {errors.admissionDate && <p className="text-xs text-red-500 font-medium">{errors.admissionDate.message}</p>}
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-bold text-gray-700">Status</label>
-              <select 
-                {...register('status')}
-                className={`w-full px-4 py-2.5 bg-gray-50 border rounded focus:outline-none focus:ring-2 transition-all ${errors.status ? 'border-red-500 focus:ring-red-500/20' : 'border-gray-100 focus:ring-blue-500/20'}`}
-              >
-                <option value="Active">Active</option>
-                <option value="Deleted">Deleted</option>
-              </select>
-
-              {errors.status && <p className="text-xs text-red-500 font-medium">{errors.status.message}</p>}
-            </div>
-          </div>
-        );
+        return <AcademicInfo register={register} errors={errors} />;
       case 2:
-        return (
-          <div key="step-2" className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="space-y-1.5">
-              <label className="text-sm font-bold text-gray-700">Hobby</label>
-              <select 
-                {...register('hobby')}
-                className={`w-full px-4 py-2.5 bg-gray-50 border rounded focus:outline-none focus:ring-2 transition-all ${errors.hobby ? 'border-red-500 focus:ring-red-500/20' : 'border-gray-100 focus:ring-blue-500/20'}`}
-              >
-                <option value="Reading">Reading</option>
-                <option value="Travelling">Travelling</option>
-                <option value="Movies">Movies</option>
-                <option value="Games">Games</option>
-              </select>
-              {errors.hobby && <p className="text-xs text-red-500 font-medium">{errors.hobby.message}</p>}
-            </div>
-          </div>
-        );
+        return <PersonalInfo register={register} errors={errors} />;
       default:
         return null;
     }
   };
+
 
   return (
     <div className="flex flex-col h-[500px]">
@@ -288,4 +212,4 @@ const MultiStepStudentForm = ({ onSuccess, onCancel, initialData }: IProps) => {
   );
 };
 
-export default MultiStepStudentForm;
+export default StudentForm;

@@ -13,6 +13,6 @@ export const studentSchema = z.object({
     message: "Admission date cannot be in the future",
   }),
 
-  status: z.enum(["Active", "Deleted"]),
+  status: z.enum(["Active", "Inactive"]),
   hobby: z.enum(["Reading", "Travelling", "Movies", "Games"]),
 });
